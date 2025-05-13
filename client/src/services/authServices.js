@@ -2,21 +2,34 @@
 const API_URL = 'http://localhost:5000/api/auth';
 
 const fetchAPI = async (url, options = {}) => {
-    const response = await fetch(url, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        },
-        credentials: 'include',
-    });
+    try {
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            },
+            credentials: 'include',
+        });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Something went wrong');
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+                errorData.message ||
+                errorData.error ||
+                `HTTP error! status: ${response.status}`
+            );
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(`API call failed: ${url}`, error);
+        throw new Error(
+            error.message ||
+            'Network connection failed. Please try again later.'
+        );
     }
 
-    return response.json();
 };
 
 // Auth functions
@@ -25,6 +38,16 @@ export const register = async (userData) => {
         method: 'POST',
         body: JSON.stringify(userData),
     });
+
+    return {
+        token: data.token,
+        user: {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.name,
+            role: data.user.role
+        }
+    };
 };
 
 export const login = async (credentials) => {

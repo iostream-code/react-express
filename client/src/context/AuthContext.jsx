@@ -1,6 +1,6 @@
-// src/context/authContext.jsx
+// src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
-import auth from '../services/auth';
+import auth from '../services/authServices';
 
 const AuthContext = createContext();
 
@@ -32,9 +32,15 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('token', newToken);
             setToken(newToken);
             setUser(userData);
-            return { success: true };
+            return {
+                success: true,
+                user: userData // Pastikan mengembalikan data user termasuk role
+            };
         } catch (error) {
-            return { success: false, error: error.message };
+            return {
+                success: false,
+                error: error.message
+            };
         }
     };
 
@@ -44,7 +50,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('token', newToken);
             setToken(newToken);
             setUser(userData);
-            return { success: true };
+            return { success: true, user };
         } catch (error) {
             return { success: false, error: error.message };
         }

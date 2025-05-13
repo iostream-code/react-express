@@ -1,4 +1,3 @@
-// src/components/Login.jsx
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -17,7 +16,8 @@ const Login = () => {
         const result = await login(email, password);
 
         if (result.success) {
-            navigate('/');
+            const redirectPath = result.user?.role === 'admin' ? '/admin' : '/';
+            navigate(redirectPath);
         } else {
             setError(result.error || 'Login failed');
         }

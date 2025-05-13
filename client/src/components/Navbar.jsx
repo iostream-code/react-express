@@ -1,22 +1,46 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = ({ title = "MyApp" }) => {
     const { isAuthenticated, user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     return (
         <div className="navbar bg-base-100 shadow-lg px-4 sm:px-8">
+            {/* Logo dan Navigasi Utama */}
             <div className="flex-1">
                 <Link to="/" className="btn btn-ghost normal-case text-xl">
                     {title}
                 </Link>
 
-                {/* Navigation Links */}
+                {/* Navigation Links - Tampil hanya saat login */}
                 {isAuthenticated && (
                     <div className="hidden sm:flex ml-4 gap-2">
                         <Link to="/dashboard" className="btn btn-ghost btn-sm">
                             Dashboard
                         </Link>
+
+                        {/* Tampilkan menu Admin hanya untuk role admin */}
+                        {user?.role === 'admin' && (
+                            <div className="dropdown dropdown-hover">
+                                <label tabIndex={0} className="btn btn-ghost btn-sm">
+                                    Admin Panel
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </label>
+                                <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                                    <li><Link to="/admin/users">User Management</Link></li>
+                                    <li><Link to="/admin/reports">Reports</Link></li>
+                                </ul>
+                            </div>
+                        )}
+
                         <Link to="/profile" className="btn btn-ghost btn-sm">
                             Profile
                         </Link>
@@ -24,6 +48,7 @@ const Navbar = ({ title = "MyApp" }) => {
                 )}
             </div>
 
+            {/* User Menu */}
             <div className="flex-none gap-4">
                 {isAuthenticated ? (
                     <>
@@ -36,25 +61,42 @@ const Navbar = ({ title = "MyApp" }) => {
                             </label>
                             <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
                                 <li><Link to="/dashboard">Dashboard</Link></li>
+                                {user?.role === 'admin' && (
+                                    <>
+                                        <li className="menu-title"><span>Admin</span></li>
+                                        <li><Link to="/admin/users">User Management</Link></li>
+                                    </>
+                                )}
                                 <li><Link to="/profile">Profile</Link></li>
-                                <li><button onClick={logout}>Logout</button></li>
+                                <li><button onClick={handleLogout}>Logout</button></li>
                             </ul>
                         </div>
 
                         {/* Desktop User Menu */}
                         <div className="dropdown dropdown-end">
-                            <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                                <div className="w-10 rounded-full bg-primary text-white flex items-center justify-center">
-                                    {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
-                                </div>
-                            </label>
+                            <div className="flex items-center gap-2">
+                                {user?.role === 'admin' && (
+                                    <span className="badge badge-primary">ADMIN</span>
+                                )}
+                                <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+                                    <div className="w-10 rounded-full bg-neutral text-neutral-content flex items-center justify-center">
+                                        {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
+                                    </div>
+                                </label>
+                            </div>
                             <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
                                 <li className="px-4 py-2 text-sm font-medium">
                                     {user?.name || user?.email}
+                                    {user?.role === 'admin' && (
+                                        <span className="badge badge-primary ml-2">ADMIN</span>
+                                    )}
                                 </li>
                                 <li><Link to="/profile">Profile</Link></li>
                                 <li><Link to="/settings">Settings</Link></li>
-                                <li><button onClick={logout} className="text-error">Logout</button></li>
+                                {user?.role === 'admin' && (
+                                    <li><Link to="/admin/dashboard">Admin Dashboard</Link></li>
+                                )}
+                                <li><button onClick={handleLogout} className="text-error">Logout</button></li>
                             </ul>
                         </div>
                     </>
