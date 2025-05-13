@@ -4,10 +4,12 @@ const router = express.Router();
 // Import semua route
 const authRoutes = require('./auth.routes');
 const postRoutes = require('./posts.routes');
+const userRoutes = require('./users.routes');
 
 // Gabungkan routes dengan prefix
 router.use('/auth', authRoutes);
 router.use('/posts', postRoutes);
+router.use('/users', userRoutes);
 
 // 404 Handler
 router.use((req, res) => {
