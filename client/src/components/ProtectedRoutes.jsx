@@ -1,21 +1,34 @@
-// src/components/ProtectedRoute.jsx
-import { useContext } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
-const ProtectedRoute = ({ children, redirectPath = '/auth/login' }) => {
-    const { user, loading } = useContext(AuthContext);
+const ProtectedRoute = ({
+    children,
+    redirectPath = '/login',
+    roles = [],
+    requireVerified = false
+}) => {
+    const { user, loading, isAuthenticated } = useAuth();
+    const location = useLocation();
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-screen">
+            <div className="flex flex-col items-center justify-center min-h-screen gap-4">
                 <span className="loading loading-spinner loading-lg"></span>
+                <p className="text-lg">Loading authentication...</p>
             </div>
         );
     }
 
-    if (!user) {
-        return <Navigate to={redirectPath} replace />;
+    if (!isAuthenticated) {
+        return <Navigate to={redirectPath} state={{ from: location }} replace />;
+    }
+
+    if (requireVerified && !user?.isVerified) {
+        return <Navigate to="/verify-email" state={{ from: location }} replace />;
+    }
+
+    if (roles.length > 0 && !roles.includes(user?.role)) {
+        return <Navigate to="/unauthorized" replace />;
     }
 
     return children ? children : <Outlet />;

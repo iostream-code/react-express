@@ -1,45 +1,25 @@
+// src/components/Login.jsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { useNavigate, Link } from 'react-router-dom';
 
-export default function Login() {
+const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const { login } = useAuth();
+    const { login, loading } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setSuccess('');
-        setIsLoading(true);
 
-        try {
-            await login({ email, password });
-            setSuccess('Login successful! Redirecting...');
+        const result = await login(email, password);
 
-            // Animasi sebelum redirect
-            await new Promise(resolve => setTimeout(resolve, 1500));
+        if (result.success) {
             navigate('/');
-        } catch (err) {
-            let errorMessage = 'Login failed';
-
-            // Handle berbagai jenis error
-            if (err.message.includes('401')) {
-                errorMessage = 'Invalid email or password';
-            } else if (err.message.includes('Network Error')) {
-                errorMessage = 'Cannot connect to server. Please check your connection.';
-            } else if (err.message.includes('timeout')) {
-                errorMessage = 'Request timeout. Server is taking too long to respond.';
-            }
-
-            setError(errorMessage);
-            setIsLoading(false);
+        } else {
+            setError(result.error || 'Login failed');
         }
     };
 
@@ -48,50 +28,18 @@ export default function Login() {
             <div className="hero-content flex-col lg:flex-row-reverse">
                 <div className="text-center lg:text-left">
                     <h1 className="text-5xl font-bold">Login now!</h1>
-                    <p className="py-6">Welcome back to our platform.</p>
+                    <p className="py-6">Welcome back to our platform. Please enter your credentials.</p>
                 </div>
                 <div className="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
                     <form onSubmit={handleSubmit} className="card-body">
-                        {/* Error Message dengan Animasi */}
-                        <AnimatePresence>
-                            {error && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="alert alert-error"
-                                >
-                                    <FiAlertCircle className="text-xl" />
-                                    <span>{error}</span>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        {/* Success Message dengan Animasi */}
-                        <AnimatePresence>
-                            {success && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="alert alert-success"
-                                >
-                                    <FiCheckCircle className="text-xl" />
-                                    <span>{success}</span>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
                         <div className="form-control">
                             <label className="label">
                                 <span className="label-text">Email</span>
                             </label>
                             <input
                                 type="email"
-                                placeholder="email@example.com"
-                                className={`input input-bordered ${error && 'input-error'}`}
+                                placeholder="email"
+                                className="input input-bordered"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
@@ -103,20 +51,29 @@ export default function Login() {
                             </label>
                             <input
                                 type="password"
-                                placeholder="••••••••"
-                                className={`input input-bordered ${error && 'input-error'}`}
+                                placeholder="password"
+                                className="input input-bordered"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                             />
+                            <label className="label">
+                                <Link to="/register" className="label-text-alt link link-hover">
+                                    Don&apos;t have an account? Register
+                                </Link>
+                            </label>
                         </div>
+                        {error && (
+                            <div className="alert alert-error">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>{error}</span>
+                            </div>
+                        )}
                         <div className="form-control mt-6">
-                            <button
-                                type="submit"
-                                className={`btn btn-primary ${isLoading ? 'loading' : ''}`}
-                                disabled={isLoading}
-                            >
-                                {isLoading ? 'Logging in...' : 'Login'}
+                            <button className="btn btn-primary" disabled={loading}>
+                                {loading ? <span className="loading loading-spinner"></span> : 'Login'}
                             </button>
                         </div>
                     </form>
@@ -124,4 +81,6 @@ export default function Login() {
             </div>
         </div>
     );
-}
+};
+
+export default Login;

@@ -1,68 +1,80 @@
+// src/context/authContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { login as apiLogin, logout as apiLogout, getCurrentUser } from '../services/auth';
+import auth from '../services/auth';
 
 const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
 
     useEffect(() => {
-        const user = getCurrentUser();
-        if (user) {
-            setUser(user);
-        }
-        setLoading(false);
-    }, []);
-
-    const login = async (credentials) => {
-        try {
-            setLoading(true);
-            const userData = await apiLogin(credentials);
-            setUser({
-                email: userData.user.email,
-                role: userData.user.role,
-                id: userData.user.id,
-                token: userData.token
-            });
-            navigate('/');
-        } catch (err) {
-            setError(err.message);
-            throw err;
-        } finally {
+        const loadUser = async () => {
+            if (token) {
+                try {
+                    const userData = await auth.getCurrentUser(token);
+                    setUser(userData);
+                } catch (err) {
+                    console.error('Failed to load user', err);
+                    logout();
+                }
+            }
             setLoading(false);
+        };
+
+        loadUser();
+    }, [token]);
+
+    const login = async (email, password) => {
+        try {
+            const { token: newToken, user: userData } = await auth.login({ email, password });
+            localStorage.setItem('token', newToken);
+            setToken(newToken);
+            setUser(userData);
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
         }
     };
 
-    const logout = () => {
-        apiLogout();
-        setUser(null);
-        navigate('/login');
+    const register = async (userData) => {
+        try {
+            const { token: newToken, user: userData } = await auth.register(userData);
+            localStorage.setItem('token', newToken);
+            setToken(newToken);
+            setUser(userData);
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
     };
 
-    const value = {
-        user,
-        loading,
-        error,
-        login,
-        logout,
-        isAuthenticated: !!user?.token
+    const logout = async () => {
+        try {
+            await auth.logout();
+        } finally {
+            localStorage.removeItem('token');
+            setToken(null);
+            setUser(null);
+        }
     };
 
     return (
-        <AuthContext.Provider value={value}>
-            {!loading && children}
+        <AuthContext.Provider
+            value={{
+                user,
+                token,
+                loading,
+                login,
+                register,
+                logout,
+                isAuthenticated: !!user,
+            }}
+        >
+            {children}
         </AuthContext.Provider>
     );
-}
+};
 
-export function useAuth() {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
-}
+export const useAuth = () => useContext(AuthContext);

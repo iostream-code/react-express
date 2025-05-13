@@ -2,41 +2,71 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = ({ title = "MyApp" }) => {
-    const { isLogin, authUser, logout } = useAuth();
+    const { isAuthenticated, user, logout } = useAuth();
 
     return (
-        <div className="navbar bg-base-100 shadow-lg">
+        <div className="navbar bg-base-100 shadow-lg px-4 sm:px-8">
             <div className="flex-1">
                 <Link to="/" className="btn btn-ghost normal-case text-xl">
                     {title}
                 </Link>
-            </div>
-            <div className="flex-none gap-2">
-                {isLogin && authUser ? (
-                    <div className="dropdown dropdown-end">
-                        <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                            <div className="w-10 rounded-full bg-primary text-white flex items-center justify-center">
-                                {authUser.Email?.charAt(0).toUpperCase() || "U"}
-                            </div>
-                        </label>
-                        <ul
-                            tabIndex={0}
-                            className="mt-3 p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52"
-                        >
-                            <li>
-                                <span className="justify-between">
-                                    {authUser.Email}
-                                </span>
-                            </li>
-                            <li>
-                                <button onClick={logout}>Logout</button>
-                            </li>
-                        </ul>
+
+                {/* Navigation Links */}
+                {isAuthenticated && (
+                    <div className="hidden sm:flex ml-4 gap-2">
+                        <Link to="/dashboard" className="btn btn-ghost btn-sm">
+                            Dashboard
+                        </Link>
+                        <Link to="/profile" className="btn btn-ghost btn-sm">
+                            Profile
+                        </Link>
                     </div>
+                )}
+            </div>
+
+            <div className="flex-none gap-4">
+                {isAuthenticated ? (
+                    <>
+                        {/* Mobile Menu (Dropdown) */}
+                        <div className="dropdown dropdown-end sm:hidden">
+                            <label tabIndex={0} className="btn btn-ghost btn-circle">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            </label>
+                            <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+                                <li><Link to="/dashboard">Dashboard</Link></li>
+                                <li><Link to="/profile">Profile</Link></li>
+                                <li><button onClick={logout}>Logout</button></li>
+                            </ul>
+                        </div>
+
+                        {/* Desktop User Menu */}
+                        <div className="dropdown dropdown-end">
+                            <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
+                                <div className="w-10 rounded-full bg-primary text-white flex items-center justify-center">
+                                    {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "U"}
+                                </div>
+                            </label>
+                            <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+                                <li className="px-4 py-2 text-sm font-medium">
+                                    {user?.name || user?.email}
+                                </li>
+                                <li><Link to="/profile">Profile</Link></li>
+                                <li><Link to="/settings">Settings</Link></li>
+                                <li><button onClick={logout} className="text-error">Logout</button></li>
+                            </ul>
+                        </div>
+                    </>
                 ) : (
-                    <Link to="/login" className="btn btn-primary">
-                        Login
-                    </Link>
+                    <div className="flex gap-2">
+                        <Link to="/login" className="btn btn-ghost">
+                            Login
+                        </Link>
+                        <Link to="/register" className="btn btn-primary">
+                            Register
+                        </Link>
+                    </div>
                 )}
             </div>
         </div>
