@@ -21,7 +21,7 @@ const Navbar = ({ title = "MyApp" }) => {
                 {/* Navigation Links - Tampil hanya saat login */}
                 {isAuthenticated && (
                     <div className="hidden sm:flex ml-4 gap-2">
-                        <Link to="/dashboard" className="btn btn-ghost btn-sm">
+                        <Link to={user?.role === 'admin' ? '/admin' : '/'} className="btn btn-ghost btn-sm">
                             Dashboard
                         </Link>
 
