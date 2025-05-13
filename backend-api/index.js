@@ -5,7 +5,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const errorHandler = require('./middlewares/errorHandler');
-const routes = require('./routes');
+const routes = require('./routes/index');
 
 const app = express();
 

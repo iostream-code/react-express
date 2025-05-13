@@ -1,17 +1,14 @@
-import express from 'express';
-import { requireAuth } from '../middlewares/auth.js';
-import {
-    getAllUsers,
-    updateUserRole,
-    updateOwnProfile,
-    deleteUser,
-} from '../controllers/user.controller.js';
-
+const express = require('express');
 const router = express.Router();
+const { requireAuth } = require('../middlewares/auth');
+const userController = require('../controllers/user.controller');
 
-router.get('/', requireAuth(['admin']), getAllUsers);
-router.patch('/:id/role', requireAuth(['admin']), updateUserRole);
-router.delete('/:id', requireAuth(['admin']), deleteUser);
-router.patch('/me', requireAuth(), updateOwnProfile);
+// Public routes
+router.get('/', requireAuth(['admin']), userController.getAllUsers);
+router.patch('/:id/role', requireAuth(['admin']), userController.updateUserRole);
+router.delete('/:id', requireAuth(['admin']), userController.deleteUser);
 
-export default router;
+// Protected routes
+router.patch('/me', requireAuth(), userController.updateOwnProfile);
+
+module.exports = router;
