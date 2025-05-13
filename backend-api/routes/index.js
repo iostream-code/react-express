@@ -3,8 +3,8 @@ const router = express.Router();
 
 // Import semua route
 const authRoutes = require('./auth.routes');
-const postRoutes = require('./posts.routes');
-const userRoutes = require('./users.routes');
+const postRoutes = require('./post.routes');
+const userRoutes = require('./user.routes');
 
 // Gabungkan routes dengan prefix
 router.use('/auth', authRoutes);
