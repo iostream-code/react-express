@@ -12,7 +12,7 @@ class PostController {
                     p.created_at AS "createdAt",
                     p.updated_at AS "updatedAt",
                     u.id AS "authorId",
-                    u.name,
+                    u.name
                 FROM posts p
                 JOIN users u ON p.user_id = u.id
             `;
@@ -44,7 +44,7 @@ class PostController {
                     p.created_at AS "createdAt",
                     p.updated_at AS "updatedAt",
                     u.id AS "authorId",
-                    u.name,
+                    u.name
                  FROM posts p
                  JOIN users u ON p.user_id = u.id
                  WHERE p.id = $1`,
