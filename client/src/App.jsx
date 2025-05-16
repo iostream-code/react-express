@@ -4,6 +4,10 @@ import { AuthProvider } from './context/AuthContext';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import PostsLayout from './pages/layouts/PostsLayout';
+import MyPosts from './pages/posts/MyPosts';
+import PostCreate from './pages/posts/Create';
+import PostDetail from './pages/posts/Edit';
 import Profile from './pages/Profile';
 import UserManagement from './pages/admin/Users';
 import AdminLayout from './pages/layouts/AdminLayout';
@@ -31,9 +35,22 @@ function App() {
             }
           />
 
+          <Route
+            path="/posts"
+            element={
+              <ProtectedRoute>
+                <PostsLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<MyPosts />} />
+            <Route path="create" element={<PostCreate />} />
+            <Route path="detail/:id" element={<PostDetail />} />
+          </Route>
+
           {/* Admin Routes */}
           <Route
-            path="/admin"
+            path="/"
             element={
               <AdminRoute>
                 <AdminLayout />

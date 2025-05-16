@@ -62,6 +62,37 @@ class PostController {
         }
     }
 
+    // [AUTHOR] Get posts owned by logged-in user
+    async getMyPosts(req, res) {
+        try {
+            if (req.user.role !== 'author') {
+                return res.status(403).json({ error: 'Only authors can view their posts' });
+            }
+
+            const result = await db.query(
+                `SELECT 
+                p.id, 
+                p.title, 
+                p.content,
+                p.created_at AS "createdAt",
+                p.updated_at AS "updatedAt",
+                u.id AS "authorId",
+                u.name
+             FROM posts p
+             JOIN users u ON p.user_id = u.id
+             WHERE p.user_id = $1
+             ORDER BY p.created_at DESC`,
+                [req.user.id]
+            );
+
+            res.json(this.formatPosts(result.rows));
+        } catch (err) {
+            console.error('Error getting my posts:', err);
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+
+
     // [AUTHOR ONLY] Create new post
     async createPost(req, res) {
         try {

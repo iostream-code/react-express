@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -6,8 +6,15 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { login, loading } = useAuth();
+    const { login, loading, user } = useAuth();
     const navigate = useNavigate();
+    const redirectPath = '/';
+
+    useEffect(() => {
+        if (user) {
+            navigate(redirectPath);
+        }
+    }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,7 +23,6 @@ const Login = () => {
         const result = await login(email, password);
 
         if (result.success) {
-            const redirectPath = result.user?.role === 'admin' ? '/admin' : '/';
             navigate(redirectPath);
         } else {
             setError(result.error || 'Login failed');

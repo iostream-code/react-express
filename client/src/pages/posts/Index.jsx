@@ -1,87 +1,58 @@
-import { useEffect, useState } from "react"
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { MdOutlineAdd } from "react-icons/md";
-import axios from "axios"
-import Header from "../../components/Header"
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 
-const PostIndex = () => {
+const Index = () => {
+    const [loading, setLoading] = useState(true);
     const [posts, setPosts] = useState([]);
-    const {
-        isLogin,
-        authUser,
-    } = useAuth()
-
-    const navigate = useNavigate()
-
-    const fetchDataPosts = async () => {
-        const response = await axios.get('http://localhost:3001/api/posts');
-        const data = await response.data.data;
-        setPosts(data);
-    }
 
     useEffect(() => {
-        fetchDataPosts()
-        !isLogin && navigate("/login")
-    });
+        const fetchPosts = async () => {
+            try {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/posts/`);
+                console.log(res.data);
+                setPosts(res.data);
+            } catch (err) {
+                console.error('Error fetching posts:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchPosts();
+    }, []);
 
     return (
-        <>
-            <div className="max-w-screen-lg mx-auto">
-                <div className="flex flex-row justify-between gap-6">
-                    <Header title="Posts" />
-                    <hr className="w-full my-auto border-slate-500 rounded-lg"></hr>
-                    <Link to="/post/create" className="btn btn-success btn-sm">
-                        <MdOutlineAdd size={14} /> Add Post
-                    </Link>
+        <div className="px-4 md:px-10 py-10">
+            <h2 className="text-3xl font-bold mb-6 text-center">Latest Posts</h2>
+
+            {loading ? (
+                <div className="flex justify-center">
+                    <span className="loading loading-spinner text-primary loading-lg"></span>
                 </div>
-                <div className="overflow-x-auto mt-4">
-                    <table className="table">
-                        <thead>
-                            <tr className="text-lg">
-                                <th>No</th>
-                                <th>Title</th>
-                                <th>Content</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {
-                                posts.length > 0 ?
-                                    posts.map((data, index) => (
-                                        <tr key={index}>
-                                            <td>{index + 1}</td>
-                                            <td>{data.title}</td>
-                                            <td>{data.content}</td>
-                                            <td className="grid grid-col gap-2">
-                                                <button className="btn btn-secondary btn-sm">Edit</button>
-                                                <button className="btn btn-error btn-sm">Delete</button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                    :
-                                    <tr>
-                                        <td colSpan={4} className="text-center">
-                                            <div className="p-4 w-full bg-error rounded-lg text-black">
-                                                Data belum ada
-                                            </div>
-                                        </td>
-                                    </tr>
-                            }
-                        </tbody>
-                    </table>
+            ) : posts.length === 0 ? (
+                <p className="text-center text-gray-500">No posts available.</p>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {posts.map((post) => (
+                        <div key={post.id} className="card bg-base-100 shadow-md border border-base-300">
+                            <div className="card-body">
+                                <h3 className="card-title">{post.title}</h3>
+                                <p className="text-sm text-gray-500">
+                                    By {post.author_id || 'Unknown'} &middot; {new Date(post.created_at).toLocaleDateString()}
+                                </p>
+                                <p className="line-clamp-3 text-sm">{post.content}</p>
+                                <div className="card-actions justify-end mt-4">
+                                    <Link to={`/posts/${post.id}`} className="btn btn-sm btn-outline btn-primary">
+                                        Read More
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-            </div>
-            {
-                isLogin ?
-                    <div className="mt-6 py-4 text-xl font-semibold">
-                        Hello, {isLogin && authUser.Name} do You want to add some post?
-                    </div>
-                    :
-                    null
-            }
-        </>
-    )
+            )}
+        </div>)
 }
 
-export default PostIndex
+export default Index

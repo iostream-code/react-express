@@ -4,6 +4,7 @@ const { requireAuth } = require('../middlewares/auth');
 const postController = require('../controllers/post.controller');
 
 router.get('/', postController.getAllPosts.bind(postController));
+router.get('/my-posts', requireAuth(['author']), postController.getMyPosts.bind(postController));
 router.get('/:id', postController.getPostById.bind(postController));
 
 router.post('/', requireAuth(['author']), postController.createPost.bind(postController));

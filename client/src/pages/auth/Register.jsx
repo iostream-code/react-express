@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -7,8 +7,15 @@ const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { register, loading } = useAuth();
+    const { register, loading, user } = useAuth();
     const navigate = useNavigate();
+    const redirectPath = '/'; ``
+
+    useEffect(() => {
+        if (user) {
+            navigate(redirectPath);
+        }
+    }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -17,7 +24,7 @@ const Register = () => {
         const result = await register({ name, email, password });
 
         if (result.success) {
-            navigate('/');
+            navigate(redirectPath);
         } else {
             setError(result.error || 'Registration failed');
         }
